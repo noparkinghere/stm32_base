@@ -1,0 +1,13 @@
+*.hex
+*.map
+*.lst
+*.crf
+*.axf
+*.htm
+*.d
+*.lnp
+*.o
+*.sct
+*.iex
+/Output
+/Listing

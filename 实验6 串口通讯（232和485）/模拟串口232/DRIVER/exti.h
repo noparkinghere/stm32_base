@@ -12,12 +12,14 @@ extern "C" {
 #include "stm32f4xx.h"
 
 
+#define RX1_PORT_SOURCE		GPIO_PortSourceGPIOA
+#define RX1_PIN_SOURCE		GPIO_PinSource10
+#define RX1_EXTI_LINE		EXTI_Line10
+#define RX1_EXTI_IRQn 		EXTI15_10_IRQn
 
 
 
-void EXTIX_Init(void);	 					    
-void NVIC_GroupConfig(void);
-void EXTIX_KeyInit(Button_TypeDef Button);	//按键外部中断初始化		
+void EXTIX_KeyInit(void);
 
 
 

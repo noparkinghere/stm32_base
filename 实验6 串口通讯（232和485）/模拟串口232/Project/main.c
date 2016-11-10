@@ -20,18 +20,24 @@
 	Return: 		0
 *************************************************/
 int main(void)
-{	
+{
+	NVIC_Configuration();
 	COM_Init();				//通讯初始化
 	delay_init();
 	
+	TIM_Init();
+	TIM3_Init_Ctrl(DISABLE);	
+	
 	while(1)
 	{
-		my_printf("UART TEST!\n");
+//		UART_SendByte('a');
+//		UART_SendByte('f');
+//		my_printf("UART TEST!\n");
 		delay_ms(200);
 		delay_ms(200);
 		delay_ms(200);
 		delay_ms(200);
-		
+		Xprintf();
 	}
 }
 

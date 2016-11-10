@@ -8,10 +8,9 @@
 #include "timer.h"
 #include "led.h"
 #include "key.h"
+#include "com.h"
 
-#define OVER_TIME 300		// 设置时间：300s
-
-
+u8 g_TimeOut = 0;
 
 #define TIMER_NVIC_DEFAULT				\
 {										\
@@ -39,7 +38,7 @@ TIM_TypeDef * TIMER_NUM[4] = {TIM2, TIM3, TIM4, TIM5};
 void TIM_Init(void)
 {
 	/* t=10000*1/(180M/4*2/9000) */
-	TIM_Configure(TIMER3, 10000, 9000);
+	TIM_Configure(TIMER3, UART_TIME_OUT, 1);
 	
 }
 
@@ -47,6 +46,8 @@ void TIM_Init(void)
 
 /***************************************************************
 	通用定时器中断初始化
+	除非 APB1 的时钟分频数设置为 1（一般都不会是 1），否则通用
+	定时器 TIMx 的时钟是 APB1 时钟的 2 倍
 	arr：自动重装值。
 	psc：时钟预分频数
 	定时器溢出时间计算方法:Tout=((arr+1)*(psc+1))/Ft us.
@@ -66,36 +67,42 @@ void TIM_Configure(TIMER_TypeDef num, u16 arr,u16 psc)
 	TIM_TimeBaseInitStructure.TIM_Prescaler = psc - 1;  //定时器分频
 	TIM_TimeBaseInit(TIMER_NUM[num], &TIM_TimeBaseInitStructure);//初始化TIMER_NUM[num]
 	TIM_ITConfig(TIMER_NUM[num], TIM_IT_Update,ENABLE); //允许定时器3更新中断
-	TIM_Cmd(TIMER_NUM[num], ENABLE); //使能定时器3
-	
-	
-	/* 定时器中断功能，如有需要可以单独设为函数 */
-	NVIC_InitTypeDef NVIC_InitStructure = TIMER_NVIC_DEFAULT;
-	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; //定时器3中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; //抢占优先级1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03; //子优先级3
-	NVIC_Init(&NVIC_InitStructure);
-	
+//	TIM_Cmd(TIMER_NUM[num], ENABLE); //使能定时器3
+	TIM_Cmd(TIMER_NUM[num], DISABLE); //失能定时器3
+
+
 }
 
-/* 定时器3中断服务函数 */
+
+void TIM3_Init_Ctrl(u8 state)
+{
+	/* 定时器中断功能，如有需要可以单独设为函数 */
+	NVIC_InitTypeDef NVIC_InitStructure = TIMER_NVIC_DEFAULT;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = state;
+	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; //定时器3中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; //抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x07; //子优先级3
+	NVIC_Init(&NVIC_InitStructure);
+
+}
+
+/* 定时器3中断服务函数，该定时器用于判定是否串口接受结束 */
 void TIM3_IRQHandler(void)
 {
-	static u16 cnt = 0;
 	
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET) //溢出中断
 	{
-		if (cnt == OVER_TIME-1)		// 设定时间为OVER_TIME秒
-		{
-			LedTurnOffALL();	// 所有灯点亮，提示用户输入数据
-			cnt = 0;
-			StartTimeOver();		// 用户输入数据，切换功能模式
-			
-		}
-		else 
-		{
-			cnt++;
-		}
+		g_TimeOut = 1;
+		
+		TIM_Cmd(TIMER_NUM[TIMER3], DISABLE); //失能定时器3
+		TIM3_Init_Ctrl(DISABLE);
 	}
 	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
 }
+
+
+
+
+
+
+

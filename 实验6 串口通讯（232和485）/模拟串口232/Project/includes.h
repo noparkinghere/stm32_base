@@ -7,6 +7,6 @@
 #include "sys.h"
 #include "led.h"
 #include "com.h"
-
+#include "timer.h"
 
 #endif

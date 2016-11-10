@@ -20,7 +20,8 @@
 	Return: 		0
 *************************************************/
 int main(void)
-{	
+{
+	NVIC_Configuration();
 	COM_Init();				//通讯初始化
 	delay_init();
 	

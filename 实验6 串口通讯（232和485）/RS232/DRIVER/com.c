@@ -181,15 +181,12 @@ void USART1_IRQHandler(void)
 	
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	{		
-	    ComRev[c++] = USART1->DR;
-//	  	printf("%c", c);    //将接受到的数据直接返回打印
+	    c=USART1->DR;
 		
-		
-		if (c == COM_REV_LEN)
-		{
-			printf("StdValue: %f", strtod(ComRev, NULL));
-			c = 0;	
-		}
+		//这边仅仅是个样例，并不推荐如此操作，一般中断中尽量使用标志判定，不推荐执行
+		//过多语句，另外这边芯片级的有16字节左右的缓冲区，所以能够来得及打赢的，如果
+		//用模拟的模式，内容基本无法打印出去，每次接收到一个数据时打印，会错过接受下一个字符的时间
+	  	printf("%c",c);    //将接受到的数据直接返回打印
 
 	}
 	USART1->DR;	//清除Parity error 手册988 PE

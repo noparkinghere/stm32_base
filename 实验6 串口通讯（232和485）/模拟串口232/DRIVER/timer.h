@@ -9,6 +9,9 @@ extern "C" {
 #endif	
 
 
+extern u8 g_TimeOut;
+
+
 
 /** ´®¿Ú¶¨Òå **/
 typedef enum 
@@ -21,11 +24,11 @@ typedef enum
 
 
 
-
+extern TIM_TypeDef * TIMER_NUM[4];
 
 void TIM_Configure(TIMER_TypeDef num, u16 arr,u16 psc);
 void TIM_Init(void);
-
+void TIM3_Init_Ctrl(u8 state);
 
 #ifdef __cplusplus
 }
